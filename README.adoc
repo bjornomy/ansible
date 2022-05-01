@@ -1,0 +1,42 @@
+= Ansible
+
+Playbooks for fun!
+
+== New Inventory
+
+You could run the following script which should create the
+folder structure in the comment
+[source,sh]
+----
+./init_inventory.sh hello
+
+###
+# hello
+#  + hosts
+#  + group_vars
+#  |  \ all
+#  |     + vars.yml
+#  |     \ vault.yml
+#  \ host_vars
+#     \ .gitkeep
+###
+----
+
+== New Role
+
+You can run the following script which should yield the folder structure in the comment
+[source,sh]
+----
+./init_role hello
+
+###
+#  hello
+#   + defaults
+#   |  \ main.yml
+#   + tasks
+#   |  \ main.yml
+#   + templates
+#   |  \ .gitkeep
+#   \ vars
+#      \ main.yml
+----

@@ -1,0 +1,6 @@
+- hosts: all
+  roles:
+    - fish_shell
+    - nerd_font
+    - create_user
+    - starship_prompt

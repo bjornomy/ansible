@@ -1,0 +1,31 @@
+# Inserts a blank line between shell prompts
+add_newline = true
+
+# Replace the "❯" symbol in the prompt with "➜"
+[character]                          # The name of the module we are configuring is "character"
+success_symbol = "[➜](bold green) "  # The "success_symbol" segment is being set to "➜" with the color "bold green"
+error_symbol = "[➜](bold red) "      # The "success_symbol" segment is being set to "➜" with the color "bold green"
+
+[username]
+show_always = true
+format = "[$user]($style) "
+
+[cmd_duration]
+format = "[$duration]($style) "
+
+[git_branch]
+format = "[$symbol$branch]($style) "
+style = "yellow"
+
+[git_status]
+style = "bold green"
+
+[hostname]
+ssh_only = true
+format = "on [$hostname](bold red) "
+disabled = false
+
+[shell]
+disabled = false
+fish_indicator = "🐟"
+style = "yellow"

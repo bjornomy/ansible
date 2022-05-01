@@ -1,0 +1,41 @@
+- name: is fish installed
+  stat:
+    path: /usr/bin/fish
+  register: fish
+
+- name: ensure_user_exists
+  become: true
+  user:
+    name: "{{ username }}"
+    password: "$6$asd2389wsdfi823$6i3mNKGNzXRWAJU.y2eeyRxJ7JF0NAYIT9WVPW.PYcw4dh7abnhMm.7Q3VfJ9g10LFVvha0h6RSvOLIM1HwSL/"
+    groups: sudo
+    shell: "{{ '/usr/bin/fish' if fish.stat.exists else '/bin/bash' }}"
+    state: present
+  register: new_user
+  tags:
+    - create_user
+
+- name: get/set user vars
+  set_fact:
+    local_home_dir: "{{ lookup('env', 'HOME') }}"
+  tags:
+    - create_user
+
+- name: add ssh key
+  become: true
+  authorized_key:
+    user: "{{ username }}"
+    key: "{{ lookup('file', '{{ local_home_dir }}/.ssh/id_ed25519.pub') }}"
+    state: present
+  tags:
+    - create_user
+
+- name: add bash_aliases
+  become: true
+  copy:
+    src: "bash_aliases.sh"
+    dest: "{{ new_user.home }}/.bash_aliases"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+  tags:
+    - create_user

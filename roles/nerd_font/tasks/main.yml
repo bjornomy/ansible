@@ -1,0 +1,51 @@
+- name: get user variables
+  set_fact:
+    home_folder: "{{ ansible_facts['user_dir'] }}"
+    installation_user: "{{ ansible_facts['user_id'] }}"
+  tags: nerd_font
+
+- name: ensure fonts directory
+  file:
+    path: "{{ home_folder }}/.fonts"
+    state: directory
+  tags: nerd_font
+
+- name: check nerd font exists
+  stat:
+    path: "{{ home_folder }}/.fonts/{{ example_font_file }}"
+  register: nerd_font_file
+  tags: nerd_font
+
+- debug:
+    msg: "Found nerd font: {{ nerd_font_file.stat.exists }}"
+
+- name: download nerd font
+  get_url:
+    url: "https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/{{ nerd_font_name }}.zip"
+    dest: "{{ home_folder }}/.fonts/"
+    owner: "{{ installation_user }}"
+    group: "{{ installation_user }}"
+  register: nerd_font_downloaded
+  when: not nerd_font_file.stat.exists
+  tags: nerd_font
+
+- name: ensure unzip installed
+  become: true
+  apt:
+    name: unzip
+    state: present
+    update-cache: yes
+  when:
+    - not nerd_font_file.stat.exists
+    - nerd_font_downloaded is success
+  tags: nerd_font
+
+- name: unarchive nerd font
+  unarchive:
+    src: "{{ home_folder }}/.fonts/{{ nerd_font_name }}.zip"
+    dest: "{{ home_folder }}/.fonts/"
+    remote_src: yes
+  when:
+    - not nerd_font_file.stat.exists
+    - nerd_font_downloaded is success
+  tags: nerd_font

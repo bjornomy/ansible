@@ -1,0 +1,73 @@
+- name: set variables
+  set_fact:
+    installation_user: "{{ ansible_facts['user_id'] }}"
+  tags:
+    - starship_prompt
+
+- name: get install script
+  become: true
+  get_url:
+    url: https://starship.rs/install.sh
+    dest: "{{ install_script_location }}"
+    owner: "{{ installation_user }}"
+    group: "{{ installation_user }}"
+    mode: 755
+  tags:
+    - starship_prompt
+
+- name: run install script
+  become: true
+  shell:
+    cmd: "{{ install_script_location }} --yes"
+  tags:
+    - starship_prompt
+
+- name: get possible users to enable for
+  shell:
+    # prints all installed users, filter out any system users, and
+    # gets username + shell like: bom:bash
+    cmd: "cat /etc/passwd | grep -i '.*:x:[0-9]\\{4\\}:' | sed -E  's/([a-z]*):([a-z0-9/:,]*)\\/([a-z]*)/\\1:\\3/'"
+  register: possible_users
+  tags:
+    - starship_prompt
+
+- name: get user_shell_map
+  set_fact:
+    user_shell_map: "{{ user_shell_map | default({}) | combine({ item.split(':')[0]: item.split(':')[1] }) }}"
+  loop: "{{ possible_users.stdout_lines | list }}"
+  tags:
+    - starship_prompt
+
+- name: set starfish init commands
+  set_fact:
+    init_command_map:
+      {
+        bash: 'eval "$(starship init bash)"',
+        fish: "starship init fish | source",
+        zsh: 'eval "$(starship init zsh)"',
+      }
+    shell_config_files:
+      { bash: ".bashrc", fish: ".config/fish/config.fish", zsh: ".zshrc" }
+  tags:
+    - starship_prompt
+
+- name: enable starfish in users shell
+  shell:
+    cmd: "echo '{{ init_command_map[user_shell_map[item]] }}' >> /home/{{ item }}/{{ shell_config_files[user_shell_map[item]] }}"
+  loop: "{{ starship_enabled_users }}"
+  when:
+    - "item in (user_shell_map)"
+  tags:
+    - starship_prompt
+
+- name: install config
+  copy:
+    src: "starship.toml"
+    dest: "/home/{{ item }}/.config/starship.toml"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+  loop: "{{ starship_enabled_users }}"
+  when:
+    - "item in (user_shell_map)"
+  tags:
+    - starship_prompt

@@ -1,0 +1,6 @@
+alias vbal='$EDITOR ~/.bash_aliases'
+alias vbrc='$EDITOR ~/.bashrc'
+alias rc='source ~/.bashrc'
+alias q='exit'
+alias aptupd='sudo apt update'
+alias aptupg='sudo apt upgrade'

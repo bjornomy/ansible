@@ -8,7 +8,7 @@
   become: true
   get_url:
     url: https://starship.rs/install.sh
-    dest: "{{ install_script_location }}"
+    dest: "{{ starship_install_script }}"
     owner: "{{ installation_user }}"
     group: "{{ installation_user }}"
     mode: 755
@@ -18,7 +18,7 @@
 - name: run install script
   become: true
   shell:
-    cmd: "{{ install_script_location }} --yes"
+    cmd: "{{ starship_install_script }} --yes"
   tags:
     - starship_prompt
 

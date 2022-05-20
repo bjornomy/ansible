@@ -1,0 +1,89 @@
+# most tasks in this role needs become, and thus the role
+# should be included with: '{ role: packages, become: yes }'
+
+- name: ensure packages installed
+  ansible.builtin.apt:
+    update_cache: yes
+    name:
+      - shellcheck
+      - fd-find
+      - httpie
+      - ripgrep
+      - docker
+      - docker-compose
+    state: present
+  tags:
+    - packages
+
+- name: check if we've created fdfind symlink
+  ansible.builtin.stat:
+    path: "{{ fdfind_symlink_target }}"
+  register: fdfind_symlink
+  tags:
+    - packages
+
+# ansible 2.9.6 doesn't support fqn for shell
+- name: get fdfind bin
+  shell:
+    cmd: "which fdfind"
+  register: fdfind_bin
+  when: not fdfind_symlink.stat.exists
+  tags:
+    - packages
+
+- name: create softlink for fdfind
+  ansible.builtin.file:
+    state: link
+    src: "{{ fdfind_bin.stdout }}"
+    path: "{{ fdfind_symlink_target }}"
+  when: 
+    - not fdfind_symlink.stat.exists
+    - fdfind_bin.rc == 0
+  tags:
+    - packages
+
+- name: check rustup install script exists
+  ansible.builtin.stat:
+    path: "{{ rustup_install_script }}"
+  register: rustup_script
+  tags:
+    - rust
+    - broot
+
+- name: get rustup install script
+  become: false
+  ansible.builtin.get_url:
+    url: https://sh.rustup.rs
+    dest: "{{ rustup_install_script }}"
+    mode: '755'
+  when: not rustup_script.stat.exists
+  tags:
+    - rust
+    - broot
+
+  # ansible 2.9.6 doesn't support fqn for shell
+- name: install rustup
+  become: false
+  shell:
+    cmd: "{{ rustup_install_script }} -y"
+  register: rustup_installed
+  tags:
+    - rust
+    - broot
+
+- name: install rust
+  shell:
+    cmd: "rustup check && rustup update"
+  when: rustup_installed.rc == 0
+  tags:
+    - rust
+    - broot
+
+- name: install broot
+  ansible.builtin.apt:
+    update_cache: yes
+    name: broot
+    state: present
+  #tags:
+    #- packages
+    #- broot

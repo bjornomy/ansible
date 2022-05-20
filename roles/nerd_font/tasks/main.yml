@@ -34,7 +34,7 @@
   apt:
     name: unzip
     state: present
-    update-cache: yes
+    update_cache: yes
   when:
     - not nerd_font_file.stat.exists
     - nerd_font_downloaded is success

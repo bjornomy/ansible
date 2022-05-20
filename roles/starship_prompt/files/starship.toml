@@ -20,6 +20,10 @@ style = "yellow"
 [git_status]
 style = "bold green"
 
+[directory]
+truncate_to_repo = false
+truncation_symbol = "…/"
+
 [hostname]
 ssh_only = true
 format = "on [$hostname](bold red) "
@@ -29,3 +33,7 @@ disabled = false
 disabled = false
 fish_indicator = "🐟"
 style = "yellow"
+
+[sudo]
+format = "[$symbol]($style)"
+disabled = false
